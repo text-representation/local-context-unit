@@ -79,7 +79,7 @@ class ContextWordRegionEmbeddingLayer(EmbeddingLayer):
         """
         win_aligned_seq = WindowAlignmentLayer(self._win_size)(seq)
         win_aligned_seq = win_aligned_seq + self._unit_id_bias
-        win_aligned_unit = super(SkipConvEmbeddingLayer, self)._forward(win_aligned_seq)
+        win_aligned_unit = super(ContextWordRegionEmbeddingLayer, self)._forward(win_aligned_seq)
         return win_aligned_unit
     
     def _forward(self, seq):
@@ -91,7 +91,7 @@ class ContextWordRegionEmbeddingLayer(EmbeddingLayer):
                 [0, win_radius], \
                 [-1, tf.cast(seq.get_shape()[1] - 2 * win_radius, tf.int32)]))
         word_emb = tf.expand_dims(word_emb, 2)
-        win_aligned_unit = self._win_aligned_unit(seq)
+        win_aligned_unit = self._win_aligned_units(seq)
         embedding = win_aligned_unit * word_emb
         embedding = self._win_merge_fn(embedding, axis=2)
         return embedding
