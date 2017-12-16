@@ -19,7 +19,7 @@ First, download the datasets and place them in `data` directory.
 Second, pre-process the datasets:
 
 ```
-	sh run.sh pre-process $data_dir
+	sh run.sh preprocess $data_dir
 ```
 
 ## 3. Training

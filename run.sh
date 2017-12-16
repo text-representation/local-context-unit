@@ -9,7 +9,7 @@ function logw() {
 }
 
 function preprocess() {
-    python src/prepare.py --data_dir=$1
+    python bin/prepare.py --data_dir=$1
 }
 
 function train() {
