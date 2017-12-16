@@ -28,6 +28,113 @@ class EmbeddingLayer(Layer):
         return tf.nn.embedding_lookup(self._W, seq)
 
 
+class WindowPoolEmbeddingLayer(EmbeddingLayer):
+    """WindowPoolEmbeddingLayer"""
+    def __init__(self, vocab_size, emb_size, win_size, \
+            win_merge_fn=None, \
+            name="win_pool_embedding", \
+            initializer=None, \
+            **kwargs):
+        
+        Layer.__init__(self, name, **kwargs) 
+        self._emb_size = emb_size
+        self._win_size = win_size
+        self._win_merge_fn = win_merge_fn
+        if not initializer:
+            initializer = tf.contrib.layers.variance_scaling_initializer()
+        self._K = self.get_variable(name + '_K', shape=[vocab_size, win_size, emb_size],
+                initializer=initializer)
+        super(WindowPoolEmbeddingLayer, self).__init__(vocab_size, emb_size, name,
+                initializer, **kwargs)
+
+    def _forward(self, seq):
+        # Window alignment embedding
+        win_aligned_seq = WindowAlignmentLayer(self._win_size)(seq)
+        win_aligned_emb = super(WindowPoolEmbeddingLayer, self)._forward(win_aligned_seq)
+
+        return self._win_merge_fn(win_aligned_emb, axis=2)
+
+
+class ScalarRegionEmbeddingLayer(EmbeddingLayer):
+    """WordContextRegionEmbeddingLayer(Scalar)"""
+    def __init__(self, vocab_size, emb_size, win_size, \
+            win_merge_fn=None, \
+            name="scalar_region_embedding", \
+            initializer=None, \
+            **kwargs):
+        Layer.__init__(self, name, **kwargs)
+        self._emb_size = emb_size
+        self._win_size = win_size
+        self._win_merge_fn = win_merge_fn
+        if not initializer:
+            initializer = tf.contrib.layers.variance_scaling_initializer()
+        self._K = self.get_variable(name + '_K', shape=[vocab_size, win_size, 1],
+                initializer=initializer)
+        super(ScalarRegionEmbeddingLayer, self).__init__(vocab_size, emb_size, name,
+                initializer, **kwargs)
+
+    def _forward(self, seq):
+        # Window alignment embedding
+        win_aligned_seq = WindowAlignmentLayer(self._win_size)(seq)
+        win_aligned_emb = super(ScalarRegionEmbeddingLayer, self)._forward(win_aligned_seq)
+
+        win_radius = self._win_size / 2
+        trimed_seq = seq[:, win_radius: seq.get_shape()[1] - win_radius]
+        context_unit = tf.nn.embedding_lookup(self._K, trimed_seq)
+
+        projected_emb = win_aligned_emb * context_unit
+        return self._win_merge_fn(projected_emb, axis=2)
+
+
+class MultiRegionEmbeddingLayer(EmbeddingLayer):
+    """"WordContextRegionEmbeddingLayer(Multi-region)"""
+    def __init__(self, vocab_size, emb_size, win_sizes, \
+            win_merge_fn=None, \
+            name="multi_region_embedding", \
+            initializer=None, \
+            **kwargs):
+        
+        Layer.__init__(self, name, **kwargs)
+        self._emb_size = emb_size
+        self._win_sizes = win_sizes[:]
+        self._win_sizes.sort()
+        self._win_merge_fn = win_merge_fn
+        win_num = len(win_sizes)
+
+        self._K = [None] * win_num
+        self._K[-1] = tf.get_variable(name + '_K_%d' % (win_num - 1), \
+                    shape=[vocab_size, self._win_sizes[-1], emb_size], \
+                    initializer=initializer)
+
+        for i in range(win_num - 1):
+            st = self._win_sizes[-1]/2 - self._win_sizes[i]/2
+            ed = st + self._win_sizes[i]
+            self._K[i] = self._K[-1][:, st:ed, :]
+
+        super(MultiRegionEmbeddingLayer, self).__init__(vocab_size, emb_size, name,
+                initializer, **kwargs)
+
+    def _forward(self, seq):
+        """_forward
+        """
+
+        multi_region_emb = [] 
+
+        for i, win_kernel in enumerate(self._K):
+            win_radius = self._win_sizes[i] / 2
+            win_aligned_seq = WindowAlignmentLayer(self._win_sizes[i], name="WinAlig_%d" % (i))(seq)
+            win_aligned_emb = super(MultiRegionEmbeddingLayer, self)._forward(win_aligned_seq)
+             
+            trimed_seq = seq[:, win_radius: seq.get_shape()[1] - win_radius]
+            context_unit = tf.nn.embedding_lookup(win_kernel, trimed_seq)
+
+            projected_emb = win_aligned_emb * context_unit
+            region_emb =  self._win_merge_fn(projected_emb, axis=2)
+            multi_region_emb.append(region_emb)
+        
+        return multi_region_emb
+
+
 class WordContextRegionEmbeddingLayer(EmbeddingLayer):
     """WordContextRegionEmbeddingLayer"""
     def __init__(self, vocab_size, emb_size, win_size, \

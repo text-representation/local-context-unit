@@ -21,6 +21,15 @@ WindowAlignmentLayer = func_layer(WindowAlignmentLayer)
 from .embedding_layer import EmbeddingLayer
 EmbeddingLayer = func_layer(EmbeddingLayer)
 
+from .embedding_layer import WindowPoolEmbeddingLayer
+WindowPoolEmbeddingLayer = func_layer(WindowPoolEmbeddingLayer)
+
+from .embedding_layer import ScalarRegionEmbeddingLayer
+ScalarRegionEmbeddingLayer = func_layer(ScalarRegionEmbeddingLayer)
+
+from .embedding_layer import MultiRegionEmbeddingLayer
+MultiRegionEmbeddingLayer = func_layer(MultiRegionEmbeddingLayer)
+
 from .embedding_layer import WordContextRegionEmbeddingLayer
 WordContextRegionEmbeddingLayer = func_layer(WordContextRegionEmbeddingLayer)
 
