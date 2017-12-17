@@ -10,6 +10,8 @@ import os
 import re
 import csv
 
+csv.field_size_limit(sys.maxsize)
+
 def clean_str(string):
     """
     Tokenization/string cleaning for all datasets except for SST.
@@ -37,8 +39,8 @@ def convert_multi_slots_to_single_slots(slots):
     """
     covert the data which text_data are saved as multi-slots, e.g()
     """
-    if len(slots) <= 1:
-        return slots
+    if len(slots) == 1:
+        return slots[0]
     else:
         return ' '.join(slots)
 
