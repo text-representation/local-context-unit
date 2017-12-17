@@ -68,7 +68,7 @@ Dbpedia.
 ## 4. Bonus methods
 We provide the extra methods involved in the paper if readers are interesed in reproducing them. All of them are based on Yelp.Full.
  
-Multi-regoion version of W.C.region.emb
+Multi-region version of W.C.region.emb
 ```
 	sh run.sh train conf/yelp.full.multi-region.model.config
 ```
