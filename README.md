@@ -23,10 +23,63 @@ Second, pre-process the datasets:
 ```
 
 ## 3. Training
-Specify the target dataset in the training configure(conf/model.config), and run:
+To ensure the reproducibility of the experiment, we provide detailed configs binding corresponding dataset. Specify the target dataset config and run:  
 
+Yelp Polarity.
 ```
-	sh run.sh train
+	sh run.sh train conf/yelp.p.model.config
 ```
 
+Yelp Full.
+```
+	sh run.sh train conf/yelp.full.model.config
+```
+
+Amazon Polarity.
+```
+	sh run.sh train conf/amazon.p.model.config
+```
+
+Amazon Full.
+```
+	sh run.sh train conf/amazon.full.model.config
+```
+
+Ag news.
+```
+	sh run.sh train conf/ag_news.model.config
+```
+
+Sougou.
+```
+	sh run.sh train conf/sougou.model.conf
+```
+
+Yahoo Answer.
+```
+	sh run.sh train conf/yahoo.answer.model.conf
+```
+
+Dbpedia.
+```
+	sh run.sh train conf/dbpedia.model.config
+```
+
+## 4. Bouns methods
+We provide the extra methods involved in the paper if readers are interesed in reproducing them. All of them are based on Yelp.Full.
+ 
+Multi-regoion version of W.C.region.emb
+```
+	sh run.sh train conf/yelp.full.multi-region.model.config
+```
+
+Scalar version of W.C.region.emb
+```
+	sh run.sh train conf/yelp.full.scalar.model.config
+```
+
+FastText(Win-pool)
+```
+	sh run.sh train conf/yelp.full.winpool.model.config
+```
 

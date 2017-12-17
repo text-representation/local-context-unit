@@ -13,7 +13,7 @@ function preprocess() {
 }
 
 function train() {
-    python src/trainer.py conf/model.config
+    python src/trainer.py $1
 }
 
 function main() {
