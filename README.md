@@ -25,61 +25,35 @@ Second, pre-process the datasets:
 ## 3. Training
 To ensure the reproducibility of the experiment, we provide detailed configs binding corresponding dataset. Specify the target dataset config and run:  
 
-Yelp Polarity.
-```
-	sh run.sh train conf/yelp.p.model.config
-```
+|Dataset| Command|
+|-----------------|----------|
+|Yelp Polarity. | ```	sh run.sh train conf yelp.p.model.config``` |
+|Yelp Full. | ```sh run.sh train conf/yelp.full.model.config```|
+|Amazon Polarity.|```	sh run.sh train conf/amazon.p.model.config```|
+|Amazon Full.|```	sh run.sh train conf/amazon.full.model.config```|
+|Ag news.|```	sh run.sh train conf/ag_news.model.config```|
+|Sogou.|```	sh run.sh train conf/sougou.model.conf```|
+|Yahoo Answer. |```sh run.sh train conf/yahoo.answer.model.conf```|
+|DBPedia.| ```sh run.sh train conf/dbpedia.model.config```|
 
-Yelp Full.
-```
-	sh run.sh train conf/yelp.full.model.config
-```
 
-Amazon Polarity.
-```
-	sh run.sh train conf/amazon.p.model.config
-```
+## 4. Exploratory experiments
+We provide the exploratory method involved in the paper if readers are interesed in reproducing them. Readers can specific the mode setting to run different expriments:
 
-Amazon Full.
-```
-	sh run.sh train conf/amazon.full.model.config
-```
+|Mode|Experiments|
+|----|-----------|
+|WC  |Word-Context |
+|CW  |Context-Word |
+|win_pool| FastText(Win-pool)|
+|scalar  |Scalar version of W.C.region.emb |
+|multi_region| Multi-region version of W.C.region.emb|
 
-Ag news.
-```
-	sh run.sh train conf/ag_news.model.config
-```
+We have placed some example configs for the exploratory experiments on Yelp.Full. You can just run folowing comands to try them:
 
-Sougou.
-```
-	sh run.sh train conf/sougou.model.conf
-```
+|Experiments| Command|
+|-----------| -------|
+|Multi-region version of W.C.region.emb |```sh run.sh train conf/yelp.full.multi-region.model.config```|
+|Scalar version of W.C.region.emb |```sh run.sh train conf/yelp.full.scalar.model.config```|
+|FastText(Win-pool)|```sh run.sh train conf/yelp.full.winpool.model.config```|
 
-Yahoo Answer.
-```
-	sh run.sh train conf/yahoo.answer.model.conf
-```
-
-Dbpedia.
-```
-	sh run.sh train conf/dbpedia.model.config
-```
-
-## 4. Bonus methods
-We provide the extra methods involved in the paper if readers are interesed in reproducing them. All of them are based on Yelp.Full.
- 
-Multi-region version of W.C.region.emb
-```
-	sh run.sh train conf/yelp.full.multi-region.model.config
-```
-
-Scalar version of W.C.region.emb
-```
-	sh run.sh train conf/yelp.full.scalar.model.config
-```
-
-FastText(Win-pool)
-```
-	sh run.sh train conf/yelp.full.winpool.model.config
-```
 
