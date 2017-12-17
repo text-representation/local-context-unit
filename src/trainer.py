@@ -142,7 +142,7 @@ class Trainer(object):
         with tf.Session(config=config_tf) as sess:
             sess.run(tf.global_variables_initializer())
             
-            print >> sys.stderr, get_cur_time(), 'Traing starts.' 
+            print >> sys.stderr, get_cur_time(), 'Training starts!' 
             while True:
                 epoch, epoch_percent, batch_slots  = self._train_batches.next()
                 batch_sequence, batch_label = zip(*batch_slots)

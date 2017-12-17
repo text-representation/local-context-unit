@@ -15,8 +15,8 @@ from .layer import Layer
 from .fc_layer import FCLayer
 FCLayer = func_layer(FCLayer)
 
-from .window_alignment_layer import WindowAlignmentLayer
-WindowAlignmentLayer = func_layer(WindowAlignmentLayer)
+from .region_alignment_layer import RegionAlignmentLayer
+RegionAlignmentLayer = func_layer(RegionAlignmentLayer)
 
 from .embedding_layer import EmbeddingLayer
 EmbeddingLayer = func_layer(EmbeddingLayer)
