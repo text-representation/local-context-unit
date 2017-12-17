@@ -8,8 +8,6 @@ Extrated raw data:
     ├── readme.txt
     ├── test.csv
     └── train.csv
-
-
 Data after preprocessed:
     1: data for training (to be used for getting the performance using 100% training data)
     tree dbpedia_csv
