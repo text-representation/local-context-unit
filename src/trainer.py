@@ -13,6 +13,8 @@ import random
 import numpy as np
 import numpy.random
 import tensorflow as tf
+import datetime
+
 
 config_tf = tf.ConfigProto()
 config_tf.gpu_options.allow_growth = True
@@ -24,6 +26,11 @@ from tedll.utils import config
 from tedll.utils import data_utils
 
 import region_emb_classify
+
+def get_cur_time():
+    time_format = '%Y.%m.%d-%H:%M:%S'
+    time_stamp = datetime.datetime.now()
+    return time_stamp.strftime('%Y.%m.%d-%H:%M:%S')
 
 class Trainer(object):
     """Trainer"""
@@ -44,32 +51,32 @@ class Trainer(object):
             self.saver.restore(sess, checkpoint_file)
             acc, loss = self.evaluate_on_data(sess,\
                     self._sequence_test, self._label_test)
-            print >> sys.stderr, 'acc is %f ' % (acc)
+            print >> sys.stderr, get_cur_time(),  'acc is %f ' % (acc)
     
     def load_data(self):
         """load_data"""
         indexes = [0, 1]
         lengths = [1, self.config.model.max_sequence_length]
 
-        print >> sys.stderr, "Load label data ..."
+        print >> sys.stderr, get_cur_time(),  "Load label data ..."
         data_path = os.path.join(base_dir, self.config.trainer.label_data)
         labels, sequence_train = \
                 data_utils.read_data(data_path, indexes, lengths)
 
-        print >> sys.stderr, "Load dev data ..."
+        print >> sys.stderr, get_cur_time(),  "Load dev data ..."
 
         data_path = os.path.join(base_dir, self.config.trainer.dev_data)
         self._label_dev, self._sequence_dev = \
                 data_utils.read_data(data_path, indexes, lengths)
 
         data_path = os.path.join(base_dir, self.config.trainer.test_data)
-        print >> sys.stderr, "Load test data ..."
+        print >> sys.stderr, get_cur_time(),  "Load test data ..."
         
         self._label_test, self._sequence_test = \
                 data_utils.read_data(data_path, indexes, lengths)
 
         self._train_batches = data_utils.batch_iter(list(zip(sequence_train, labels)), \
-                self.config.trainer.batch_size, self.config.trainer.max_epoch)
+                self.config.trainer.batch_size, self.config.trainer.max_epoch + 1)
 
     def evaluate_on_data(self, sess, sequence, labels):
         """evaluate_on_data
@@ -134,13 +141,12 @@ class Trainer(object):
  
         with tf.Session(config=config_tf) as sess:
             sess.run(tf.global_variables_initializer())
+            
+            print >> sys.stderr, get_cur_time(), 'Traing starts.' 
             while True:
                 epoch, epoch_percent, batch_slots  = self._train_batches.next()
                 batch_sequence, batch_label = zip(*batch_slots)
-                if epoch >= self.config.trainer.max_epoch:
-                    print >> sys.stderr, "Training Done!"
-                    exit(0)
-                
+                                
                 feed_dict = {
                         self.model.sequence: batch_sequence,
                         self.model.label: batch_label}
@@ -156,11 +162,12 @@ class Trainer(object):
                     output_format = 'epoch:{0}[{1:.2f}%] batch_loss:{2}| global_step:{3}'
                     output = [epoch, epoch_percent, \
                             batch_loss / self.config.trainer.batch_size, global_step]
-                    print >> sys.stderr, output_format.format(*output)
+                    print >> sys.stderr, get_cur_time(),  output_format.format(*output)
 
 
                 # End of an epoch
                 if current_epoch < epoch:
+                    print >> sys.stderr, get_cur_time(), "epoch {} done.".format(current_epoch) 
                     #self.saver.save(sess, os.path.join(checkpoint_dir, 'model.cpkt'),\
                     #        global_step=global_step)
                     # Test on dev
@@ -171,7 +178,7 @@ class Trainer(object):
                     format_str = 'epoch {0} finished. Performance on {1}:'\
                             ' [acc:{2}, loss:{3}]'
                     output = [current_epoch, 'Dev', dev_acc, loss]
-                    print >> sys.stderr, format_str.format(*output)
+                    print >> sys.stderr, get_cur_time(), format_str.format(*output)
                     test_acc, loss = \
                             self.evaluate_on_data(sess, self._sequence_test, self._label_test)
                     if dev_acc > best_dev_acc:
@@ -180,11 +187,15 @@ class Trainer(object):
                         best_test_acc = test_acc
 
                     output = [current_epoch, 'Test', test_acc, loss]
-                    print >> sys.stderr, format_str.format(*output)
-                    print >> sys.stderr, 'Best Epoch: %d---Best test acc: %f---Best dev acc: %f---'\
+                    print >> sys.stderr, get_cur_time(),  format_str.format(*output)
+                    print >> sys.stderr, get_cur_time(),  'Best Epoch: %d---Best test acc: %f---Best dev acc: %f---'\
                             % (best_epoch, best_test_acc, best_dev_acc)
 
                     current_epoch = epoch
+                
+                if epoch >= self.config.trainer.max_epoch:
+                    print >> sys.stderr, get_cur_time(),  "Training Done!"
+                    exit(0)
 
 
 def main():
@@ -192,6 +203,9 @@ def main():
     config_path = sys.argv[1]
     config_file = os.path.join(base_dir, config_path)
     main_config = config.Config(config_file=config_file)
+   
+    print >> sys.stderr, 'config path is: ', config_path
+    print >> sys.stderr, 'config is: ', main_config
 
     model = region_emb_classify.RegionEmbeddingClassify(main_config.model)
     trainer = Trainer(model, main_config)
