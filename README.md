@@ -65,7 +65,7 @@ Dbpedia.
 	sh run.sh train conf/dbpedia.model.config
 ```
 
-## 4. Bouns methods
+## 4. Bonus methods
 We provide the extra methods involved in the paper if readers are interesed in reproducing them. All of them are based on Yelp.Full.
  
 Multi-regoion version of W.C.region.emb
