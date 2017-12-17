@@ -59,10 +59,10 @@ def build_vocab(save_dir, data, min_frq=2):
         for items in lines:
             text_data = convert_multi_slots_to_single_slots(items[1:])
             text_data = clean_str(text_data)
-            subs = set(text_data.split(' '))# word only counts once in a doucment
-            for ite in subs:
-                if ite: #remove ' '
-                    word_count[ite] = word_count.get(ite, 0) + 1
+            words = set(text_data.split(' '))# word only counts once in a doucment
+            for word in words:
+                if word: #remove ' '
+                    word_count[word] = word_count.get(word, 0) + 1
 
     # remove unfrequence words
     word_count_filterd = {k:v for k,v in word_count.items() if v >= min_frq}
@@ -102,11 +102,11 @@ def token_lize(vocab, data):
             for items in lines:
                 text_data = convert_multi_slots_to_single_slots(items[1:])
                 text_data = clean_str(text_data)
-                subs = text_data.split(' ')
-                s = []
-                for i in xrange(len(subs)):
-                    s.append(vocab.get(subs[i], '1')) #1 == <unk>
-                text_data_ids = ' '.join(s)
+                words = text_data.split(' ')
+                word_ids = []
+                for word in words:
+                    word_ids.append(vocab.get(word, '1')) #1 == <unk>
+                text_data_ids = ' '.join(word_ids)
                 lable = str(int(items[0]) - 1) # add -1 bias to ensure min label value is 0
                 print >> out_f, ';'.join([lable, text_data_ids])
 
