@@ -120,7 +120,7 @@ def split_train_dev(data, dev_dir, rate):
         random.shuffle(lines)
         dev_idx = int(len(lines) * rate)
 
-    train_file = dev_dir + '/train.csv'
+    train_file = dev_dir + '/dev_train.csv'
     dev_file = dev_dir + '/dev.csv'
 
     with open(dev_file, 'w') as f:
