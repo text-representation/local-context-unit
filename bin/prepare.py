@@ -33,44 +33,52 @@ def clean_str(string):
     string = re.sub(r"\s{2,}", " ", string)
     return string.strip().lower()
 
+def convert_multi_slots_to_single_slots(slots):
+    """
+    covert the data which text_data are saved as multi-slots, e.g()
+    """
+    if len(slots) <= 1:
+        return slots
+    else:
+        return ' '.join(slots)
 
-def build_vocab(data_dir, data, min_frq=2):
+
+def build_vocab(save_dir, data, min_frq=2):
     """
     build vocab from data, which slot 1 is text data, slot 0 is label
+    param:
+        1: save_dir: the data dir where the vocabulary dict file saved
+        2: data: input train data
+        3: min_req : words that appare less than {min_req} times will be replaced as <unk>
+    output:
+        1: vocabulary_dict(key: word, value: idx)  
     """
-    dic = {}
+    word_count = {}
     with open(data, 'rb') as csvfile:
         lines = csv.reader(csvfile)
         for items in lines:
-            used = set()#word only count once in a doucment 
-            items[1] = clean_str(items[1])
-            subs = items[1].split(' ')
+            text_data = convert_multi_slots_to_single_slots(items[1:])
+            text_data = clean_str(text_data)
+            subs = set(text_data.split(' '))# word only counts once in a doucment
             for ite in subs:
-                if ite in used:
-                    continue
-                used.add(ite)
-                if ite:
-                    dic[ite] = dic.get(ite, 0) + 1
-    res = {}
-    unk = 0
-    for k in dic:
-        if dic[k] >= min_frq:
-            res[k] = dic[k]
-        else:
-            unk += 1
-    cnts = sorted(res.items(), key = lambda x:-x[1])
-    v_id = {}
-    with open(data_dir + '/unigram.id', 'w') as id_f:
-        print >> id_f, "<unk>\t1"
-        print >> id_f, "<pad>\t0"
-        v_id['<unk>'] = '1'
-        v_id['<pad>'] = '0'
-        i = 2
-        for k, v in cnts:
-            print >> id_f, k + '\t' + str(i)
-            v_id[k] = str(i)
-            i += 1
-    return v_id
+                if ite: #remove ' '
+                    word_count[ite] = word_count.get(ite, 0) + 1
+
+    # remove unfrequence words
+    word_count_filterd = {k:v for k,v in word_count.items() if v >= min_frq}
+
+    words_sorted_by_count = sorted(word_count_filterd.items(), key = lambda x:-x[1])
+
+    vocab_dict = {"<pad>": "0", "<unk>" : '1'}
+    with open(save_dir + '/unigram.id', 'w') as vocab_file:
+        print >> vocab_file, "<pad>\t0"
+        print >> vocab_file, "<unk>\t1"
+        idx = 2
+        for k, v in words_sorted_by_count:
+            print >> vocab_file, k + '\t' + str(idx)
+            vocab_dict[k] = str(idx)
+            idx += 1
+    return vocab_dict
 
 
 def load_vocab(v):
@@ -92,27 +100,28 @@ def token_lize(vocab, data):
         with open(data, 'rb') as csvfile:
             lines = csv.reader(csvfile)
             for items in lines:
-                items[1] = clean_str(items[1])
-                subs = items[1].split(' ')
+                text_data = convert_multi_slots_to_single_slots(items[1:])
+                text_data = clean_str(text_data)
+                subs = text_data.split(' ')
                 s = []
                 for i in xrange(len(subs)):
                     s.append(vocab.get(subs[i], '1')) #1 == <unk>
-                items[1] = ' '.join(s)
-                items[0] = str(int(items[0]) - 1) # add -1 bias to ensure min label value is 0
-                print >> out_f, ';'.join(items)
+                text_data_ids = ' '.join(s)
+                lable = str(int(items[0]) - 1) # add -1 bias to ensure min label value is 0
+                print >> out_f, ';'.join([lable, text_data_ids])
 
 
-def split_train_dev(data, rate):
+def split_train_dev(data, dev_dir, rate):
     """
-    split data to train and dev sets
+    split train data to dev_train and dev sets
     """
     with open(data, 'r') as f:
         lines = f.readlines()
         random.shuffle(lines)
         dev_idx = int(len(lines) * rate)
 
-    train_file = data + '.train'
-    dev_file = data + '.dev'
+    train_file = dev_dir + '/train.csv'
+    dev_file = dev_dir + '/dev.csv'
 
     with open(dev_file, 'w') as f:
         f.write(''.join(lines[0:dev_idx]))
@@ -121,6 +130,22 @@ def split_train_dev(data, rate):
         f.write(''.join(lines[dev_idx:]))
 
     return train_file, dev_file
+
+def process(train_file, test_file, frequence_cut, save_dir, dev_file=''):
+
+    """
+    build vocabulary dict from train_file
+    tokenlize all datas
+    """
+    if not os.path.exists(v):
+        print >> sys.stderr, 'vocab not exist, build from data'
+        vocab = build_vocab(save_dir, train_file, frequence_cut)
+    else:
+        vocab = load_vocab(v)
+    for _file in [train_file, test_file]:
+        token_lize(vocab, _file)
+    if dev_file:
+        token_lize(vocab, dev_file)
 
 
 if __name__ == '__main__':
@@ -136,7 +161,7 @@ if __name__ == '__main__':
     v = ''
     data_dir = ''
     dev_rate = 0.1
-    cut = 2 #remove words that only apear in one document
+    frequence_cut = 2 #remove words that only apear in one document
     if not options: _usage()
     for key, val in options:
         val = val.strip()
@@ -145,20 +170,25 @@ if __name__ == '__main__':
         elif key == '--data_dir':
             data_dir = val
         elif key == '--min_frq_cut':
-            cut = int(val)
+            frequence_cut = int(val)
         elif key == '--dev_rate':
             dev_rate = float(val)
         elif key == '-h' or key == '--help':
             _usage()
         else: _usage()
 
-    train_file, dev_file = split_train_dev(data_dir + '/train.csv', dev_rate)
-    test_file = data_dir + '/test.csv'
+    dev_dir = data_dir.strip('/') + '_for_dev'
+    os.system('mkdir -p %s' % dev_dir)
+    os.system('cp %s/test.csv %s/dev_test.csv' % (data_dir, dev_dir))
 
-    if not os.path.exists(v):
-        print >> sys.stderr, 'vocab not exist, build from data'
-        vocab = build_vocab(data_dir, train_file, cut)
-    else:
-        vocab = load_vocab(v)
-    for _file in [train_file, dev_file, test_file]:
-        token_lize(vocab, _file)
+    dev_train_file, dev_file = split_train_dev(data_dir + '/train.csv', dev_dir, dev_rate)
+    dev_test_file = dev_dir + '/dev_test.csv'
+    
+    test_file = data_dir + '/test.csv'
+    train_file = data_dir + '/train.csv'
+
+    #generate data for parameter tuning, default using 10% training data for dev
+    process(dev_train_file, dev_test_file, frequence_cut, dev_dir, dev_file)
+
+    #use the best parameter and 100% training data to get the model's performance
+    process(train_file, test_file, frequence_cut, data_dir)
