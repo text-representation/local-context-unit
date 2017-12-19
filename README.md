@@ -32,13 +32,13 @@ To ensure the reproducibility of the experiment, we provide detailed configs bin
 |Amazon Polarity.|```	sh run.sh train conf/amazon.p.model.config```|
 |Amazon Full.|```	sh run.sh train conf/amazon.full.model.config```|
 |Ag news.|```	sh run.sh train conf/ag_news.model.config```|
-|Sogou.|```	sh run.sh train conf/sougou.model.conf```|
+|Sogou.|```	sh run.sh train conf/sogou.model.conf```|
 |Yahoo Answer. |```sh run.sh train conf/yahoo.answer.model.conf```|
 |DBPedia.| ```sh run.sh train conf/dbpedia.model.config```|
 
 
 ## 4. Exploratory experiments
-We provide the exploratory method involved in the paper if readers are interesed in reproducing them. Readers can specific the mode setting to run different expriments:
+We provide the exploratory method involved in the paper if readers are interesed in reproducing them. Readers can specific the mode setting in configure to run different expriments:
 
 |Mode|Experiments|
 |----|-----------|
@@ -55,5 +55,4 @@ We have placed some example configs for the exploratory experiments on Yelp.Full
 |Multi-region version of W.C.region.emb |```sh run.sh train conf/yelp.full.multi-region.model.config```|
 |Scalar version of W.C.region.emb |```sh run.sh train conf/yelp.full.scalar.model.config```|
 |FastText(Win-pool)|```sh run.sh train conf/yelp.full.winpool.model.config```|
-
 
