@@ -1,4 +1,5 @@
 # Bag of region embeddings via local context units for text classification
+Tensorflow implementation of ICLR 2018 paper [A new method of region embedding for text classification](https://openreview.net/forum?id=BkSDMA36Z).
 
 ## 0. Requirements 
 
@@ -7,7 +8,7 @@ Python (verified on 2.7.13)
 
 ### Python Packages
 tensorflow(verified on 1.0)
-	
+    
 
 ## 1. Datasets
 We use publicly available datasets from Zhang et al.(2015) to evaluate our models.
